@@ -4,9 +4,9 @@
 # Author  : Kartik Kumar
 ##############################################################################
 
-# ---- 0. SETUP ---------------------------------------------------------
-# install.packages(c("tidyverse","caret","corrplot","car","pROC",
-#                     "randomForest","GGally","broom"))
+# Packages used:
+# tidyverse, caret, corrplot, car, pROC, randomForest, broom
+# Install them once if needed, then run the library() calls below.
 
 library(tidyverse)
 library(caret)
@@ -18,18 +18,9 @@ library(broom)
 
 set.seed(123)
 
-# ---- 1. DATASET IDENTIFICATION ----------------------------------------
-# The Breast Cancer Wisconsin (Diagnostic) dataset (Wolberg, Street & Mangasarian,
-# UCI Machine Learning Repository) contains 569 digitized fine-needle-aspirate
-# images of breast masses. For each image, 10 real-valued morphological features
-# of cell nuclei were computed as mean, standard error, and "worst" values,
-# producing 30 numeric predictors. The outcome is Malignant (M) or Benign (B).
-#
-# Rationale for selection:
-#  - Real-world, high-stakes classification problem
-#  - Numeric predictors suit statistical analysis and classification modelling
-#  - Moderate dimensionality supports discussion of multicollinearity
-#  - Publicly documented dataset
+# ---- 1. DATASET ----------------------------------------------------------
+# The script expects a local CSV named `breast_cancer_data.csv`.
+# Obtain the dataset from its authoritative source before running the script.
 
 bc_data <- read.csv("breast_cancer_data.csv", stringsAsFactors = FALSE)
 bc_data$diagnosis <- factor(bc_data$diagnosis, levels = c("B", "M"))
@@ -40,18 +31,16 @@ sum(is.na(bc_data))
 table(bc_data$diagnosis)
 prop.table(table(bc_data$diagnosis))
 
-# ---- 2. EXPLORATORY STATISTICAL ANALYSIS -------------------------------
+# ---- 2. EXPLORATORY STATISTICAL ANALYSIS --------------------------------
 
-## 2.1 Summary statistics
 summary(bc_data[ , grep("^mean_", names(bc_data))])
 
-## 2.2 Class balance plot
 ggplot(bc_data, aes(x = diagnosis, fill = diagnosis)) +
   geom_bar() +
   labs(title = "Class Distribution of Diagnosis", x = "", y = "Count") +
   theme_minimal()
 
-## 2.3 Normality checks on key continuous variables
+# Normality checks on selected continuous variables
 shapiro.test(bc_data$mean_radius)
 shapiro.test(bc_data$mean_area)
 shapiro.test(bc_data$mean_texture)
@@ -64,7 +53,6 @@ qqnorm(bc_data$mean_radius, main = "Normal Q-Q: Mean Radius")
 qqline(bc_data$mean_radius, col = "red")
 par(mfrow = c(1, 1))
 
-## 2.4 Distributions by diagnosis group
 key_vars <- c("mean_radius", "mean_texture", "mean_concavity", "mean_smoothness")
 bc_data %>%
   select(diagnosis, all_of(key_vars)) %>%
@@ -75,10 +63,8 @@ bc_data %>%
   theme_minimal() +
   labs(title = "Distribution of Key Features by Diagnosis")
 
-## 2.5 Hypothesis testing: Welch two-sample t-tests
-## H0: mean feature value is equal for Malignant and Benign groups
-## H1: mean feature value differs between groups
-
+# Welch two-sample t-tests
+# H0: group means are equal; H1: group means differ.
 t_test_vars <- c("mean_radius", "mean_texture", "mean_perimeter", "mean_area",
                   "mean_smoothness", "mean_compactness", "mean_concavity",
                   "mean_concave_points")
@@ -92,10 +78,10 @@ t_test_results
 t.test(mean_radius ~ diagnosis, data = bc_data)
 t.test(mean_concave_points ~ diagnosis, data = bc_data)
 
-## Levene's test - equality of variance assumption check
+# Equality-of-variance check
 car::leveneTest(mean_radius ~ diagnosis, data = bc_data)
 
-## 2.6 Correlation analysis (multicollinearity check)
+# Correlation / multicollinearity screening
 mean_vars <- grep("^mean_", names(bc_data), value = TRUE)
 corr_matrix <- cor(bc_data[ , mean_vars], method = "pearson")
 round(corr_matrix, 2)
@@ -105,10 +91,11 @@ corrplot(corr_matrix, method = "color", type = "upper",
          title = "Correlation Matrix: Mean Tumor Characteristics",
          mar = c(0, 0, 2, 0))
 
-# ---- 3. MODEL BUILDING --------------------------------------------------
+# ---- 3. LOGISTIC REGRESSION ---------------------------------------------
+# A reduced predictor set is used for the explanatory model after correlation
+# screening. Mean perimeter and mean area are excluded because of strong
+# correlation with mean radius in the supplied analytical plan.
 
-## 3.1 Explanatory logistic regression model (reduced, non-collinear set)
-## mean_perimeter & mean_area dropped: r > 0.98 with mean_radius (collinearity)
 glm_vars <- c("mean_radius", "mean_texture", "mean_smoothness", "mean_compactness",
               "mean_concavity", "mean_concave_points", "mean_symmetry",
               "mean_fractal_dimension")
@@ -121,11 +108,10 @@ summary(glm_model)
 exp(coef(glm_model))
 confint(glm_model)
 
-## 3.2 Multicollinearity diagnostic
+# Multicollinearity diagnostic
 vif(glm_model)
 
-## 3.3 Predictive modelling workflow: train/test split + 10-fold CV
-feature_cols <- setdiff(names(bc_data), "diagnosis")
+# ---- 4. PREDICTIVE MODELLING --------------------------------------------
 
 train_index <- createDataPartition(bc_data$diagnosis, p = 0.70, list = FALSE)
 train_data  <- bc_data[train_index, ]
@@ -135,74 +121,77 @@ table(train_data$diagnosis)
 table(test_data$diagnosis)
 
 ctrl <- trainControl(method = "cv", number = 10,
-                      classProbs = TRUE, summaryFunction = twoClassSummary,
-                      savePredictions = TRUE)
+                     classProbs = TRUE,
+                     summaryFunction = twoClassSummary,
+                     savePredictions = TRUE)
 
-## Model A: Logistic regression (glm) with 10-fold CV
+# Logistic regression baseline
 model_glm_cv <- train(diagnosis ~ ., data = train_data, method = "glm",
-                       family = "binomial", trControl = ctrl,
-                       preProcess = c("center", "scale"), metric = "ROC")
+                      family = "binomial", trControl = ctrl,
+                      preProcess = c("center", "scale"), metric = "ROC")
 print(model_glm_cv)
 
-## Model B: Random forest with 10-fold CV
+# Random forest comparison
 model_rf_cv <- train(diagnosis ~ ., data = train_data, method = "rf",
-                      trControl = ctrl, preProcess = c("center", "scale"),
-                      metric = "ROC", ntree = 500)
+                     trControl = ctrl,
+                     preProcess = c("center", "scale"),
+                     metric = "ROC", ntree = 500)
 print(model_rf_cv)
 
-# ---- 4. DIAGNOSTIC ANALYSIS & MODEL EVALUATION --------------------------
+# ---- 5. HELD-OUT TEST EVALUATION ----------------------------------------
 
-## 4.1 Predictions on held-out test set
 pred_glm <- predict(model_glm_cv, newdata = test_data)
 prob_glm <- predict(model_glm_cv, newdata = test_data, type = "prob")[, "M"]
 
 pred_rf  <- predict(model_rf_cv, newdata = test_data)
 prob_rf  <- predict(model_rf_cv, newdata = test_data, type = "prob")[, "M"]
 
-## 4.2 Confusion matrices
 cm_glm <- confusionMatrix(pred_glm, test_data$diagnosis, positive = "M")
 cm_rf  <- confusionMatrix(pred_rf,  test_data$diagnosis, positive = "M")
 cm_glm
 cm_rf
 
-## 4.3 ROC curves & AUC
-roc_glm <- roc(response = test_data$diagnosis, predictor = prob_glm, levels = c("B","M"))
-roc_rf  <- roc(response = test_data$diagnosis, predictor = prob_rf,  levels = c("B","M"))
+roc_glm <- roc(response = test_data$diagnosis, predictor = prob_glm,
+               levels = c("B", "M"))
+roc_rf  <- roc(response = test_data$diagnosis, predictor = prob_rf,
+               levels = c("B", "M"))
 
 plot(roc_glm, col = "blue", main = "ROC Curves: Test Set Performance")
-plot(roc_rf,  col = "red", add = TRUE)
-legend("bottomright", legend = c(paste0("Logistic Regression (AUC=", round(auc(roc_glm),3), ")"),
-                                  paste0("Random Forest (AUC=",       round(auc(roc_rf), 3), ")")),
+plot(roc_rf, col = "red", add = TRUE)
+legend("bottomright",
+       legend = c(paste0("Logistic Regression (AUC=", round(auc(roc_glm), 3), ")"),
+                  paste0("Random Forest (AUC=", round(auc(roc_rf), 3), ")")),
        col = c("blue", "red"), lwd = 2)
 
 auc(roc_glm)
 auc(roc_rf)
 
-## 4.4 GLM residual diagnostics
+# ---- 6. DIAGNOSTICS ------------------------------------------------------
+
 par(mfrow = c(2, 2))
 plot(glm_model)
 par(mfrow = c(1, 1))
 
-## Cook's distance / influential points
 cooksd <- cooks.distance(glm_model)
 plot(cooksd, type = "h", main = "Cook's Distance", ylab = "Cook's distance")
-abline(h = 4/nrow(glm_data), col = "red", lty = 2)
-influential <- which(cooksd > 4/nrow(glm_data))
+abline(h = 4 / nrow(glm_data), col = "red", lty = 2)
+influential <- which(cooksd > 4 / nrow(glm_data))
 length(influential)
 
-## 4.5 Random forest variable importance
-varImpPlot(model_rf_cv$finalModel, main = "Random Forest Variable Importance", n.var = 12)
+varImpPlot(model_rf_cv$finalModel,
+           main = "Random Forest Variable Importance", n.var = 12)
 importance_df <- importance(model_rf_cv$finalModel)
 importance_df[order(-importance_df[, "MeanDecreaseGini"]), ][1:10, ]
 
-## 4.6 Cross-validation accuracy comparison
-resamps <- resamples(list(LogisticRegression = model_glm_cv, RandomForest = model_rf_cv))
+resamps <- resamples(list(LogisticRegression = model_glm_cv,
+                           RandomForest = model_rf_cv))
 summary(resamps)
 bwplot(resamps, metric = "ROC")
 
-# ---- 5. SUMMARY OF FINDINGS ---------------------------------------------
-# See the accompanying Week 3 report for narrative interpretation,
-# tables, figures, and discussion of limitations.
+# ---- 7. NOTES ------------------------------------------------------------
+# The accompanying report provides the narrative interpretation, tables,
+# figures and limitations. Do not interpret this educational analysis as a
+# clinical diagnostic system.
 
 ##############################################################################
 # END OF SCRIPT
