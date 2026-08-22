@@ -3,27 +3,25 @@
 **Kartik Kumar**  
 **Internship portfolio | August 2026**
 
-A four-week data science project covering project planning, exploratory analysis, statistical analysis, predictive modelling, and communication of insights.
+A four-week data science internship portfolio covering project planning, exploratory analysis, statistical analysis, predictive-modeling methodology, and professional reporting.
 
-> **Scope note:** This repository intentionally contains a mixture of project plans, analytical frameworks, executable analysis, and illustrative reporting. It does not present hypothetical examples as real business outcomes.
+> **Separation note:** This repository is the internship project only. The independent `data-analysis-capstone` is maintained in its own GitHub repository and is not part of this project.
 
 ## Project at a glance
 
-The work follows a practical analytical path:
-
 **Problem definition → Data understanding → Exploration → Statistical analysis → Modelling → Evaluation → Insight → Action → Measurement**
 
-The emphasis is on the reasoning around an analysis: defining the decision, checking data quality, preventing leakage, choosing appropriate validation, understanding limitations, and communicating conclusions clearly.
+The work emphasizes analytical reasoning, data quality, leakage prevention, validation, limitations and clear communication.
 
 ## Project map
 
-| Week | Focus | Repository material |
+| Week | Focus | Nature of work |
 |---|---|---|
-| **01** | Project Planning & Strategy | Business problem, scope, data strategy, evaluation, governance and 33-hour delivery plan |
-| **02** | EDA & Visualisation | Reusable data-quality, exploration, visualisation, validation and documentation framework |
-| **03A** | Python ML Development | Leakage-safe preprocessing, model candidates, validation, thresholding, interpretation and monitoring plan |
-| **03B** | Statistical Analysis in R | Breast Cancer Wisconsin (Diagnostic) analysis, hypothesis tests, logistic regression, random forest and diagnostics |
-| **04** | Final Reporting & Insights | Executive communication, visual plan, insight-to-action framework, measurement and future work |
+| **01** | Project Planning & Strategy | Scope, objectives, data strategy, evaluation and governance |
+| **02** | EDA & Visualisation | Data-quality, exploration, visualization and documentation framework |
+| **03A** | Python ML Development | Leakage-safe preprocessing, model candidates, validation, thresholding and monitoring plan |
+| **03B** | Statistical Analysis in R | Breast Cancer Wisconsin analysis, statistical tests, logistic regression, random forest and diagnostics |
+| **04** | Final Reporting & Insights | Executive communication, insight-to-action framework and future work |
 
 ## Repository structure
 
@@ -41,11 +39,7 @@ The emphasis is on the reasoning around an analysis: defining the decision, chec
 │
 ├── data/
 │   └── README.md
-│
 ├── docs/
-│   ├── PROJECT_SCOPE.md
-│   └── REVIEW_CHECKLIST.md
-│
 ├── Week-1-Project-Planning/
 ├── Week-2-EDA/
 ├── Week-3-Machine-Learning/
@@ -56,23 +50,23 @@ The emphasis is on the reasoning around an analysis: defining the decision, chec
 
 ## Week 3: executed R analysis
 
-The R track uses the **Breast Cancer Wisconsin (Diagnostic)** dataset. The script covers data inspection, missing-value and class-balance checks, distribution and assumption checks, Welch two-sample t-tests, correlation/multicollinearity analysis, logistic regression, VIF diagnostics, a stratified 70/30 train-test split, 10-fold cross-validation, random forest, confusion matrices, ROC/AUC evaluation, residual diagnostics, Cook's distance and variable importance.
+The R track uses the **Breast Cancer Wisconsin (Diagnostic)** dataset. It covers data inspection, missing-value and class-balance checks, distribution and assumption checks, Welch two-sample t-tests, correlation/multicollinearity analysis, logistic regression, VIF diagnostics, a stratified 70/30 train-test split, 10-fold cross-validation, random forest, confusion matrices, ROC/AUC evaluation, residual diagnostics, Cook's distance and variable importance.
 
 This is an educational classification exercise and **not a clinical diagnostic system**.
 
 ## Week 3: Python ML plan
 
-The Python material is a development and evaluation plan for a hypothetical customer-churn classification problem. It covers leakage-safe preprocessing, an interpretable baseline, candidate models, cross-validation, threshold selection, error analysis, deployment and monitoring. It should be read as methodology rather than as evidence of completed churn-model performance.
+The Python material is a development and evaluation plan for a hypothetical customer-churn classification problem. It covers leakage-safe preprocessing, an interpretable baseline, candidate models, cross-validation, threshold selection, error analysis, deployment and monitoring. It should be read as methodology rather than evidence of completed churn-model performance.
 
 ## Responsible interpretation
 
-The project distinguishes three kinds of material:
+The repository deliberately distinguishes:
 
-- **Observed analysis:** results produced by the R workflow against its documented dataset.
-- **Planned methodology:** workflows describing how a future analysis should be performed.
-- **Illustrative reporting:** mock findings and visuals used to demonstrate executive communication.
+- **Observed analysis:** results produced by the executed R workflow.
+- **Planned methodology:** workflows describing how future analysis should be performed.
+- **Illustrative reporting:** examples used to demonstrate executive communication.
 
-Keeping these categories separate is deliberate. A public portfolio should make clear what the evidence supports and what it does not.
+This prevents hypothetical outcomes from being presented as measured business results.
 
 ## Tools
 
@@ -85,13 +79,15 @@ Keeping these categories separate is deliberate. A public portfolio should make 
 
 ## Data and reproducibility
 
-The `data/` directory contains source and handling notes. Public datasets are not copied into the repository without checking their current source, citation and redistribution conditions. The R script expects a local `breast_cancer_data.csv` file with the documented column structure.
+The `data/` directory contains source and handling notes. Public datasets are not copied into the repository without checking their source, citation and redistribution conditions. The R workflow documents the expected local dataset structure.
 
 No private credentials, confidential internship information or unnecessary personal data should be committed to this repository.
 
-## Why this repository is structured this way
+## Independent capstone — kept separate
 
-This is my first GitHub project, developed as part of my data science internship work. I have kept the repository focused on the work itself rather than adding decorative portfolio material. Each section exists to document a real part of the analytical process or to explain how the work should be interpreted.
+The repository **`data-analysis-capstone`** is a separate project and should be evaluated independently. It contains its own end-to-end R data-analysis workflow. It is intentionally not duplicated inside this internship repository.
+
+This repository should therefore be read as **internship evidence**, while the capstone should be read as a **separate technical portfolio project**.
 
 ## Author
 
